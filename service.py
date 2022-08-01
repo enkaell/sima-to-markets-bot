@@ -1,13 +1,16 @@
 import requests
+import logging
+import datetime
 
 # OZON init
 API_KEY = "dc4a490e-949a-4a11-b5d4-1e8381ab9602"
 CLIENT_ID = "402856"
 
 # SIMA LAND init
-SIMA_LAND_MIN = 2
+SIMA_LAND_MIN = 3
 
-
+logging.basicConfig(filename='bot.log')
+logging.info(str(datetime.datetime.now()))
 # SIMA_LAND_TOKEN = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NTk3MTg1NDksImlhdCI6MTY1OTExMzc0OSwianRpIjoyNzA3MjQxLCJuYmYiOjE2NTkxMTM3NDl9.g7JlVOzc4QB3Tv5mBoVo8AN0kjygCfrGmRdqhWRiHsM '
 #
 
@@ -29,8 +32,9 @@ def get_ozon_items(API_KEY, CLIENT_ID):
 
 def get_sima_land_items(ozon_products_ids, SIMA_LAND_TOKEN):
     sima_land = []
-    for i in ozon_products_ids:
-        print(f'sima {i}')
+    for i in ozon_products_ids[:5]:
+        print(i)
+        logging.info(f'Получение товара с артикулом {i}')
         try:
             response = requests.get(
                 f'https://www.sima-land.ru/api/v5/item/{i}?view=brief&by_sid=true',
@@ -61,7 +65,7 @@ def update_ozon_items(sima_land, API_KEY, CLIENT_ID):
     stocks = []
     if sima_land:
         for i in sima_land:
-            print(f'ozon {i}')
+            logging.info(f'Загрузка товара с артикулом {i}')
             stocks.append({"offer_id": str(i['sid']), "stock": i['stock'], "warehouse_id": warehouse_id})
             # todo сделать запросы через внутреннее апи if len(stocks) % 50 == 0 or len(sima_land) < 50:
             res = requests.post('https://api-seller.ozon.ru/v2/products/stocks',
@@ -76,4 +80,9 @@ def update_ozon_items(sima_land, API_KEY, CLIENT_ID):
     else:
         return 'Товары не требуют обновления или слишком низкий SIMA_MIN'
 
-# update_ozon_items(get_sima_land_items(get_ozon_items()))
+
+def main(API_KEY, CLIENT_ID, SIMA_LAND_TOKEN):
+    update_ozon_items(
+        get_sima_land_items(get_ozon_items(API_KEY, CLIENT_ID), SIMA_LAND_TOKEN),
+        API_KEY, CLIENT_ID)
+

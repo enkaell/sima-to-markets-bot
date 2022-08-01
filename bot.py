@@ -3,7 +3,8 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.dispatcher.filters.state import StatesGroup, State
 from aiogram.dispatcher import FSMContext
-from service import update_ozon_items, get_ozon_items, get_sima_land_items
+from service import main
+import schedule
 
 BOT_TOKEN = '5485325873:AAHyJaeUdm8IimgHCOeZ9ulj0s97LTO1saA'
 logging.basicConfig(level=logging.INFO)
@@ -58,9 +59,9 @@ async def get_sima_token(message: types.Message, state: FSMContext):
         async with state.proxy() as data:
             data['SIMA_LAND_TOKEN'] = str(message.text)
         await bot.send_message(message.from_user.id, 'Начинаю работу...')
-        update_ozon_items(
-            get_sima_land_items(get_ozon_items(data['API_KEY'], data['CLIENT_ID']), data['SIMA_LAND_TOKEN']),
-            data['API_KEY'], data['CLIENT_ID'])
+        schedule.every(10).hours.do(main, data['API_KEY'], data['CLIENT_ID'], data['SIMA_LAND_TOKEN'])
+        while True:
+            schedule.run_pending()
         await state.finish()
 
 
