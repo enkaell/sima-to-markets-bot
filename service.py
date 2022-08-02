@@ -66,6 +66,7 @@ def update_ozon_items(sima_land, API_KEY, CLIENT_ID):
     if sima_land:
         for i in sima_land:
             logging.info(f'Загрузка товара с артикулом {i}')
+            print(f'Загрузка товара {i}')
             stocks.append({"offer_id": str(i['sid']), "stock": i['stock'], "warehouse_id": warehouse_id})
             # todo сделать запросы через внутреннее апи if len(stocks) % 50 == 0 or len(sima_land) < 50:
             res = requests.post('https://api-seller.ozon.ru/v2/products/stocks',

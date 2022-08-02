@@ -59,6 +59,7 @@ async def get_sima_token(message: types.Message, state: FSMContext):
         async with state.proxy() as data:
             data['SIMA_LAND_TOKEN'] = str(message.text)
         await bot.send_message(message.from_user.id, 'Начинаю работу...')
+        main(data['API_KEY'], data['CLIENT_ID'], data['SIMA_LAND_TOKEN'])
         schedule.every(10).hours.do(main, data['API_KEY'], data['CLIENT_ID'], data['SIMA_LAND_TOKEN'])
         while True:
             schedule.run_pending()
