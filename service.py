@@ -32,7 +32,7 @@ def get_ozon_items(API_KEY, CLIENT_ID):
 
 def get_sima_land_items(ozon_products_ids, SIMA_LAND_TOKEN):
     sima_land = []
-    for i in ozon_products_ids[:5]:
+    for i in ozon_products_ids:
         print(i)
         logging.info(f'Получение товара с артикулом {i}')
         try:
