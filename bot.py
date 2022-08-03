@@ -6,8 +6,8 @@ from aiogram.dispatcher import FSMContext
 from service import main
 import schedule
 
-BOT_TOKEN = '5485325873:AAHyJaeUdm8IimgHCOeZ9ulj0s97LTO1saA'
-logging.basicConfig(level=logging.INFO)
+BOT_TOKEN = '5435062174:AAFk05hUbCX018oTsFn4pNegP1QUaDvePyw'
+# logging.basicConfig(level=logging.INFO)
 
 # Initialize bot and dispatcher
 bot = Bot(token=BOT_TOKEN)
