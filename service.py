@@ -16,7 +16,15 @@ SIMA_LAND_MIN = 3
 # SIMA_LAND_TOKEN = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NTk3MTg1NDksImlhdCI6MTY1OTExMzc0OSwianRpIjoyNzA3MjQxLCJuYmYiOjE2NTkxMTM3NDl9.g7JlVOzc4QB3Tv5mBoVo8AN0kjygCfrGmRdqhWRiHsM '
 #
 
-def get_ozon_items(API_KEY, CLIENT_ID):
+def main(SIMA_LAND_TOKEN, API_KEY, CLIENT_ID):
+    ozon_products_ids, last_id = get_ozon_items(API_KEY, CLIENT_ID)
+    while len(ozon_products_ids) > 1:
+        get_sima_land_items(ozon_products_ids, SIMA_LAND_TOKEN, API_KEY, CLIENT_ID)
+        ozon_products_ids, last_id = get_ozon_items(API_KEY, CLIENT_ID, last_id)
+    return "Ended"
+
+
+def get_ozon_items(API_KEY, CLIENT_ID, last_id=''):
     ozon_products_ids = []
     res = requests.post('https://api-seller.ozon.ru/v3/product/info/stocks',
                         headers={'Api-Key': API_KEY, 'Client-Id': CLIENT_ID},
@@ -24,12 +32,13 @@ def get_ozon_items(API_KEY, CLIENT_ID):
                             "filter": {
                                 "visibility": "VISIBLE"
                             },
-                            "last_id": "",
+                            "last_id": f"{last_id}",
                             "limit": 1000
                         })
     for i in res.json().get('result')['items']:
         ozon_products_ids.append(int(i.get('offer_id')))
-    return ozon_products_ids
+    last_id = res.json().get('result')['last_id']
+    return ozon_products_ids, last_id
 
 
 def get_sima_land_items(ozon_products_ids, SIMA_LAND_TOKEN, API_KEY, CLIENT_ID):
@@ -90,5 +99,3 @@ def update_ozon_items(stocks, API_KEY, CLIENT_ID):
         return 'Товары не требуют обновления или слишком низкий SIMA_MIN'
 
 
-def main(API_KEY, CLIENT_ID, SIMA_LAND_TOKEN):
-    get_sima_land_items(get_ozon_items(API_KEY, CLIENT_ID), SIMA_LAND_TOKEN, API_KEY, CLIENT_ID)
