@@ -39,7 +39,7 @@ def get_sima_land_items(ozon_products_ids, SIMA_LAND_TOKEN, API_KEY, CLIENT_ID):
     warehouse_id = res.json()['result'][0].get('warehouse_id')
 
     for i in ozon_products_ids:
-        if len(stocks) == 50:
+        if len(stocks) == 50 or len(ozon_products_ids[ozon_products_ids.index(i):]) < 50:
             update_ozon_items(stocks, API_KEY, CLIENT_ID)
             stocks = []
         print(i)
@@ -63,7 +63,7 @@ def get_sima_land_items(ozon_products_ids, SIMA_LAND_TOKEN, API_KEY, CLIENT_ID):
             else:
                 stocks.append({'offer_id': str(response.json()['sid']), 'stock': response.json()['balance'],  "warehouse_id": warehouse_id})
         except Exception as e:
-            print(e)
+            print(response.json()['message'])
     return stocks
 
 
