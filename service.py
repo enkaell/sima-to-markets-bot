@@ -1,6 +1,7 @@
 import requests
 import logging
-import datetime
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 # OZON init
 API_KEY = "dc4a490e-949a-4a11-b5d4-1e8381ab9602"
@@ -17,6 +18,7 @@ SIMA_LAND_MIN = 3
 #
 
 def main(SIMA_LAND_TOKEN, API_KEY, CLIENT_ID):
+
     ozon_products_ids, last_id = get_ozon_items(API_KEY, CLIENT_ID)
     while len(ozon_products_ids) > 1:
         get_sima_land_items(ozon_products_ids, SIMA_LAND_TOKEN, API_KEY, CLIENT_ID)
@@ -36,13 +38,22 @@ def get_ozon_items(API_KEY, CLIENT_ID, last_id=''):
                             "limit": 1000
                         })
     for i in res.json().get('result')['items']:
-        ozon_products_ids.append(int(i.get('offer_id')))
+        try:
+            ozon_products_ids.append(int(i.get('offer_id')))
+        except ValueError as e:
+            print(e)
+            pass
     last_id = res.json().get('result')['last_id']
     return ozon_products_ids, last_id
 
 
 def get_sima_land_items(ozon_products_ids, SIMA_LAND_TOKEN, API_KEY, CLIENT_ID):
     stocks = []
+    session = requests.Session()
+    retry = Retry(connect=3, backoff_factor=0.5)
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount('https://', adapter)
+
     res = requests.post('https://api-seller.ozon.ru/v1/warehouse/list',
                              headers={'Api-Key': API_KEY, 'Client-Id': CLIENT_ID})
     warehouse_id = res.json()['result'][0].get('warehouse_id')
@@ -54,7 +65,7 @@ def get_sima_land_items(ozon_products_ids, SIMA_LAND_TOKEN, API_KEY, CLIENT_ID):
         print(i)
         logging.info(f'Получение товара с артикулом {i}')
         try:
-            response = requests.get(
+            response = session.get(
                 f'https://www.sima-land.ru/api/v5/item/{i}?view=brief&by_sid=true',
                 headers={
                     'accept': 'application/json',
