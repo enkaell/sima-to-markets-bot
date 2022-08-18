@@ -92,17 +92,25 @@ def update_ozon_items(stocks, API_KEY, CLIENT_ID):
     # response = requests.post('https://api-seller.ozon.ru/v1/warehouse/list',
     #                          headers={'Api-Key': API_KEY, 'Client-Id': CLIENT_ID})
     # warehouse_id = response.json()['result'][0].get('warehouse_id')
+    session = requests.Session()
+    retry = Retry(connect=3, backoff_factor=0.5)
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount('https://', adapter)
     if stocks:
         logging.info(f'Загрузка товаров с артикулом {stocks}')
         print(f'Загрузка товара {stocks}')
         # stocks.append({"offer_id": str(i['sid']), "stock": i['stock'], "warehouse_id": warehouse_id})
         # todo сделать запросы через внутреннее апи if len(stocks) % 50 == 0 or len(sima_land) < 50:
 
-        res = requests.post('https://api-seller.ozon.ru/v2/products/stocks',
+        res = session.post('https://api-seller.ozon.ru/v2/products/stocks',
                             headers={'Api-Key': API_KEY, 'Client-Id': CLIENT_ID},
                             json={
                                 "stocks": stocks
                             })
+        try:
+            res.json()['result']
+        except KeyError:
+            print('fc')
         for item in res.json()['result']:
             if not item['updated']:
                 print("Товар не обновлен")
