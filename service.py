@@ -117,8 +117,8 @@ def update_ozon_items(stocks, API_KEY, CLIENT_ID):
                            })
         try:
             res.json()['result']
-        except KeyError:
-            print('fc')
+        except Exception as e:
+            print(e)
         for item in res.json()['result']:
             if not item['updated']:
                 print("Товар не обновлен")
