@@ -3,7 +3,7 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.dispatcher.filters.state import StatesGroup, State
 from aiogram.dispatcher import FSMContext
-from service import main
+from service import main, Result
 import schedule
 
 BOT_TOKEN = '5435062174:AAFk05hUbCX018oTsFn4pNegP1QUaDvePyw'
@@ -60,6 +60,7 @@ async def get_sima_token(message: types.Message, state: FSMContext):
             data['SIMA_LAND_TOKEN'] = str(message.text)
         await bot.send_message(message.from_user.id, 'Начинаю работу...')
         print(main(data['SIMA_LAND_TOKEN'], data['API_KEY'], data['CLIENT_ID']))
+        await bot.send_message(message.from_user.id, f"Товаров в продаже: {Result.items_selling}, Товары которых нет на Сима-Ленде: {Result.items_waiting}")
         schedule.every(10).hours.do(main, data['SIMA_LAND_TOKEN'], data['API_KEY'], data['CLIENT_ID'])
         while True:
             schedule.run_pending()
