@@ -89,7 +89,7 @@ def get_sima_land_items(ozon_products_ids, SIMA_LAND_TOKEN, API_KEY, CLIENT_ID):
                 stocks.append({'offer_id': str(response.json()['sid']), 'stock': response.json()['balance'],
                                "warehouse_id": warehouse_id})
         except Exception as e:
-            print(e)
+            print(i, response.json().get('message'))
     return stocks
 
 
