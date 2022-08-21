@@ -1,4 +1,5 @@
 import requests
+import time
 import logging
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
@@ -64,7 +65,7 @@ def get_sima_land_items(ozon_products_ids, SIMA_LAND_TOKEN, API_KEY, CLIENT_ID):
     warehouse_id = res.json()['result'][0].get('warehouse_id')
 
     for i in ozon_products_ids:
-        if len(stocks) == 50 or len(ozon_products_ids[ozon_products_ids.index(i):]) < 50:
+        if len(stocks) == 50:
             update_ozon_items(stocks, API_KEY, CLIENT_ID)
             stocks = []
         print(i)
@@ -100,7 +101,7 @@ def update_ozon_items(stocks, API_KEY, CLIENT_ID):
     #                          headers={'Api-Key': API_KEY, 'Client-Id': CLIENT_ID})
     # warehouse_id = response.json()['result'][0].get('warehouse_id')
     session = requests.Session()
-    retry = Retry(connect=3, backoff_factor=0.5)
+    retry = Retry(connect=2, backoff_factor=10)
     adapter = HTTPAdapter(max_retries=retry)
     session.mount('https://', adapter)
 
@@ -118,9 +119,10 @@ def update_ozon_items(stocks, API_KEY, CLIENT_ID):
         try:
             res.json()['result']
         except Exception as e:
-            print(e)
+            print(e, time.time())
         for item in res.json()['result']:
             if not item['updated']:
+                time.sleep(10)
                 print("Товар не обновлен")
             else:
                 Result.items_selling += 1
