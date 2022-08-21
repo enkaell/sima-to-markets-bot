@@ -29,7 +29,7 @@ def main(SIMA_LAND_TOKEN, API_KEY, CLIENT_ID):
     while len(ozon_products_ids) > 1:
         get_sima_land_items(ozon_products_ids, SIMA_LAND_TOKEN, API_KEY, CLIENT_ID)
         ozon_products_ids, last_id = get_ozon_items(API_KEY, CLIENT_ID, last_id)
-    return "Ended"
+    print(f"Ended in {time.time()}")
 
 
 def get_ozon_items(API_KEY, CLIENT_ID, last_id=''):
@@ -68,8 +68,6 @@ def get_sima_land_items(ozon_products_ids, SIMA_LAND_TOKEN, API_KEY, CLIENT_ID):
         if len(stocks) == 50:
             update_ozon_items(stocks, API_KEY, CLIENT_ID)
             stocks = []
-        print(i)
-        logging.info(f'Получение товара с артикулом {i}')
         try:
             response = session.get(
                 f'https://www.sima-land.ru/api/v5/item/{i}?view=brief&by_sid=true',
