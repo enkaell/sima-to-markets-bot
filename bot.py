@@ -1,4 +1,6 @@
 import logging
+import time
+
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.dispatcher.filters.state import StatesGroup, State
@@ -58,15 +60,18 @@ async def get_sima_token(message: types.Message, state: FSMContext):
     else:
         async with state.proxy() as data:
             data['SIMA_LAND_TOKEN'] = str(message.text)
+        user_id = message.from_user.id
         await bot.send_message(message.from_user.id, 'Начинаю работу...')
-        print(main(data['SIMA_LAND_TOKEN'], data['API_KEY'], data['CLIENT_ID']))
-        await bot.send_message(message.from_user.id, f"Товаров в продаже: {Result.items_selling}, Товары которых нет на Сима-Ленде: {Result.items_waiting}")
-        schedule.every(10).hours.do(main, data['SIMA_LAND_TOKEN'], data['API_KEY'], data['CLIENT_ID'])
+        startup(data['SIMA_LAND_TOKEN'], data['API_KEY'], data['CLIENT_ID'], user_id)
+        schedule.every(10).hours.do(startup, data['SIMA_LAND_TOKEN'], data['API_KEY'], data['CLIENT_ID'], user_id)
         while True:
             schedule.run_pending()
         await state.finish()
 
-
+def startup(SIMA_LAND_TOKEN, API_KEY, CLIENT_ID, user_id):
+    main(SIMA_LAND_TOKEN, API_KEY, CLIENT_ID)
+    bot.send_message(user_id,
+                           f"Товаров в продаже: {Result.items_selling}, Товары которых нет на Сима-Ленде: {Result.items_waiting}, Дата: {time.time()}")
 # todo здесь сделать остановку работы бота
 @dp.message_handler(state='*', commands='stop')
 async def stop_state(message: types.Message, state: FSMContext):
