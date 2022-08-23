@@ -4,10 +4,11 @@ import logging
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 from dataclasses import dataclass, field
+import datetime
 
 # OZON init
-API_KEY = "dc4a490e-949a-4a11-b5d4-1e8381ab9602"
-CLIENT_ID = "402856"
+API_KEY = str()
+CLIENT_ID = str()
 
 # SIMA LAND init
 SIMA_LAND_MIN = 3
@@ -24,12 +25,14 @@ class Result:
     items_selling: int = 0
     items_waiting: int = 0
 
+
 def main(SIMA_LAND_TOKEN, API_KEY, CLIENT_ID):
     ozon_products_ids, last_id = get_ozon_items(API_KEY, CLIENT_ID)
     while len(ozon_products_ids) > 1:
         get_sima_land_items(ozon_products_ids, SIMA_LAND_TOKEN, API_KEY, CLIENT_ID)
         ozon_products_ids, last_id = get_ozon_items(API_KEY, CLIENT_ID, last_id)
-    print(f"Ended in {time.time()}")
+    print(
+        f"Ended in {datetime.datetime.now()},в продаже: {Result.items_selling}, которых нет на Сима-Ленде: {Result.items_waiting}")
 
 
 def get_ozon_items(API_KEY, CLIENT_ID, last_id=''):
@@ -47,7 +50,7 @@ def get_ozon_items(API_KEY, CLIENT_ID, last_id=''):
         try:
             ozon_products_ids.append(int(i.get('offer_id')))
         except ValueError as e:
-            print(e)
+            print(i, ' ', e)
             pass
     last_id = res.json().get('result')['last_id']
     return ozon_products_ids, last_id
@@ -105,7 +108,6 @@ def update_ozon_items(stocks, API_KEY, CLIENT_ID):
 
     if stocks:
         logging.info(f'Загрузка товаров с артикулом {stocks}')
-        print(f'Загрузка товара {stocks}')
         # stocks.append({"offer_id": str(i['sid']), "stock": i['stock'], "warehouse_id": warehouse_id})
         # todo сделать запросы через внутреннее апи if len(stocks) % 50 == 0 or len(sima_land) < 50:
 
@@ -121,7 +123,7 @@ def update_ozon_items(stocks, API_KEY, CLIENT_ID):
         for item in res.json()['result']:
             if not item['updated']:
                 time.sleep(10)
-                print("Товар не обновлен")
+                print(f"Товар {item['offer_id']} не обновлен")
             else:
                 Result.items_selling += 1
     else:
