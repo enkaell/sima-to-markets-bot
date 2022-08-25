@@ -5,6 +5,7 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 from dataclasses import dataclass, field
 import datetime
+import configparser
 
 # OZON init
 API_KEY = str()
@@ -26,7 +27,12 @@ class Result:
     items_waiting: int = 0
 
 
-def main(SIMA_LAND_TOKEN, API_KEY, CLIENT_ID):
+def main():
+    config = configparser.ConfigParser()
+    config.read('conf.ini')
+    SIMA_LAND_TOKEN = config['APP']['sima_land_token']
+    API_KEY = config['APP']['api_key']
+    CLIENT_ID = config['APP']['client_id']
     ozon_products_ids, last_id = get_ozon_items(API_KEY, CLIENT_ID)
     while len(ozon_products_ids) > 1:
         get_sima_land_items(ozon_products_ids, SIMA_LAND_TOKEN, API_KEY, CLIENT_ID)
@@ -92,7 +98,7 @@ def get_sima_land_items(ozon_products_ids, SIMA_LAND_TOKEN, API_KEY, CLIENT_ID):
                 stocks.append({'offer_id': str(response.json()['sid']), 'stock': response.json()['balance'],
                                "warehouse_id": warehouse_id})
         except Exception as e:
-            print(i, response.json().get('message'))
+            print(i, response.json().get('message'),f'at time {datetime.datetime.now()}')
     return stocks
 
 
@@ -123,7 +129,7 @@ def update_ozon_items(stocks, API_KEY, CLIENT_ID):
         for item in res.json()['result']:
             if not item['updated']:
                 time.sleep(10)
-                print(f"Товар {item['offer_id']} не обновлен")
+                print(f"Товар {item['offer_id']} не обновлен ", item['errors'][0]['message'])
             else:
                 Result.items_selling += 1
     else:

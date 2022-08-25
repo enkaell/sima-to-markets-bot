@@ -5,6 +5,7 @@ from aiogram.dispatcher.filters.state import StatesGroup, State
 from aiogram.dispatcher import FSMContext
 from service import main, Result
 import schedule
+import configparser
 
 BOT_TOKEN = '5435062174:AAFk05hUbCX018oTsFn4pNegP1QUaDvePyw'
 # logging.basicConfig(level=logging.INFO)
@@ -59,9 +60,19 @@ async def get_sima_token(message: types.Message, state: FSMContext):
         async with state.proxy() as data:
             data['SIMA_LAND_TOKEN'] = str(message.text)
         await bot.send_message(message.from_user.id, 'Начинаю работу...')
-        main(data['SIMA_LAND_TOKEN'], data['API_KEY'], data['CLIENT_ID'])
+        config = configparser.ConfigParser()
+        config.read('conf.ini')  # -> "/path/name/"
+        config['APP']['sima_land_token'] = data['SIMA_LAND_TOKEN']  # update
+        config['APP']['api_key'] = data['API_KEY']  # create
+        config['APP']['client_id'] = data['CLIENT_ID']  # create
+
+        with open('conf.ini', 'w') as configfile:  # save
+            config.write(configfile)
+
+        main()
         await bot.send_message(message.from_user.id, f"Товаров в продаже: {Result.items_selling}, Товары которых нет на Сима-Ленде: {Result.items_waiting}")
-        schedule.every(10).hours.do(main, data['SIMA_LAND_TOKEN'], data['API_KEY'], data['CLIENT_ID'])
+
+        schedule.every(10).hours.do(main)
         while True:
             schedule.run_pending()
         await state.finish()
