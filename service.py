@@ -30,7 +30,9 @@ class Result:
 def main():
     config = configparser.ConfigParser()
     config.read('conf.ini')
-    SIMA_LAND_TOKEN = config['APP']['sima_land_token']
+    json_data = {"password": "RAMTRX1500", "regulation": True, "email": "Rakhmanov-2019@list.ru"}
+    response = requests.post('https://www.sima-land.ru/api/v5/signin', json=json_data)
+    SIMA_LAND_TOKEN = response.json().get('token')
     API_KEY = config['APP']['api_key']
     CLIENT_ID = config['APP']['client_id']
     ozon_products_ids, last_id = get_ozon_items(API_KEY, CLIENT_ID)

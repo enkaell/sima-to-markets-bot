@@ -47,22 +47,9 @@ async def get_clientid(message: types.Message, state: FSMContext):
     else:
         async with state.proxy() as data:
             data['CLIENT_ID'] = str(message.text)
-        await bot.send_message(message.from_user.id, 'Введите SIMA LAND JWT')
-        await BotState.next()
-
-
-@dp.message_handler(state=BotState.sima_token)
-async def get_sima_token(message: types.Message, state: FSMContext):
-    if 'Bearer' not in message.text:
-        await bot.send_message(message.from_user.id, 'Неверно введен токен ! Копируйте вместе с Bearer')
-        return
-    else:
-        async with state.proxy() as data:
-            data['SIMA_LAND_TOKEN'] = str(message.text)
         await bot.send_message(message.from_user.id, 'Начинаю работу...')
         config = configparser.ConfigParser()
         config.read('conf.ini')  # -> "/path/name/"
-        config['APP']['sima_land_token'] = data['SIMA_LAND_TOKEN']  # update
         config['APP']['api_key'] = data['API_KEY']  # create
         config['APP']['client_id'] = data['CLIENT_ID']  # create
 
@@ -92,7 +79,6 @@ def register_handlers(dp: Dispatcher):
     dp.register_message_handler(send_welcome, commands='start')
     dp.register_message_handler(get_apikey)
     dp.register_message_handler(get_clientid)
-    dp.register_message_handler(get_sima_token)
     dp.register_message_handler(stop_state)
 
 
