@@ -67,7 +67,7 @@ def get_ozon_items(API_KEY, CLIENT_ID, last_id=''):
 def get_sima_land_items(ozon_products_ids, SIMA_LAND_TOKEN, API_KEY, CLIENT_ID):
     stocks = []
     session = requests.Session()
-    retry = Retry(connect=3, backoff_factor=0.5)
+    retry = Retry(connect=3, backoff_factor=1)
     adapter = HTTPAdapter(max_retries=retry)
     session.mount('https://', adapter)
 
@@ -110,7 +110,7 @@ def update_ozon_items(stocks, API_KEY, CLIENT_ID):
     #                          headers={'Api-Key': API_KEY, 'Client-Id': CLIENT_ID})
     # warehouse_id = response.json()['result'][0].get('warehouse_id')
     session = requests.Session()
-    retry = Retry(connect=3, backoff_factor=0.5)
+    retry = Retry(connect=3, backoff_factor=1)
     adapter = HTTPAdapter(max_retries=retry)
     session.mount('https://', adapter)
 
