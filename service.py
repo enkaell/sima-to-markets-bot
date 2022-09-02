@@ -1,6 +1,8 @@
 import requests
 import time
 import logging
+
+import schedule
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 from dataclasses import dataclass, field
@@ -39,8 +41,10 @@ def main():
     while len(ozon_products_ids) > 1:
         get_sima_land_items(ozon_products_ids, SIMA_LAND_TOKEN, API_KEY, CLIENT_ID)
         ozon_products_ids, last_id = get_ozon_items(API_KEY, CLIENT_ID, last_id)
-    print(
-        f"Ended in {datetime.datetime.now()},в продаже: {Result.items_selling}, которых нет на Сима-Ленде: {Result.items_waiting}")
+        if len(ozon_products_ids) < 4:
+            k = 1
+            print(
+                f"Ended in {datetime.datetime.now()},в продаже: {Result.items_selling}, которых нет на Сима-Ленде: {Result.items_waiting}")
 
 
 def get_ozon_items(API_KEY, CLIENT_ID, last_id=''):
@@ -100,7 +104,7 @@ def get_sima_land_items(ozon_products_ids, SIMA_LAND_TOKEN, API_KEY, CLIENT_ID):
                 stocks.append({'offer_id': str(response.json()['sid']), 'stock': response.json()['balance'],
                                "warehouse_id": warehouse_id})
         except Exception as e:
-            print(i, response.json().get('message'),f'at time {datetime.datetime.now()}')
+            print(i, response.json().get('message'), f'at time {datetime.datetime.now()}')
     return stocks
 
 
@@ -110,7 +114,7 @@ def update_ozon_items(stocks, API_KEY, CLIENT_ID):
     #                          headers={'Api-Key': API_KEY, 'Client-Id': CLIENT_ID})
     # warehouse_id = response.json()['result'][0].get('warehouse_id')
     session = requests.Session()
-    retry = Retry(connect=3, backoff_factor=1)
+    retry = Retry(connect=3, backoff_factor=0.5)
     adapter = HTTPAdapter(max_retries=retry)
     session.mount('https://', adapter)
 
@@ -136,3 +140,7 @@ def update_ozon_items(stocks, API_KEY, CLIENT_ID):
                 Result.items_selling += 1
     else:
         return 'Товары не требуют обновления или слишком низкий SIMA_MIN'
+
+
+main()
+
