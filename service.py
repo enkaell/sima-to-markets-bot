@@ -35,6 +35,7 @@ def main():
     json_data = {"password": "RAMTRX1500", "regulation": True, "email": "Rakhmanov-2019@list.ru"}
     response = requests.post('https://www.sima-land.ru/api/v5/signin', json=json_data)
     SIMA_LAND_TOKEN = response.json().get('token')
+    print(SIMA_LAND_TOKEN)
     API_KEY = config['APP']['api_key']
     CLIENT_ID = config['APP']['client_id']
     ozon_products_ids, last_id = get_ozon_items(API_KEY, CLIENT_ID)
@@ -80,7 +81,7 @@ def get_sima_land_items(ozon_products_ids, SIMA_LAND_TOKEN, API_KEY, CLIENT_ID):
     warehouse_id = res.json()['result'][0].get('warehouse_id')
 
     for i in ozon_products_ids:
-        if len(stocks) == 50:
+        if len(stocks) == 90:
             update_ozon_items(stocks, API_KEY, CLIENT_ID)
             stocks = []
         try:
@@ -114,12 +115,12 @@ def update_ozon_items(stocks, API_KEY, CLIENT_ID):
     #                          headers={'Api-Key': API_KEY, 'Client-Id': CLIENT_ID})
     # warehouse_id = response.json()['result'][0].get('warehouse_id')
     session = requests.Session()
-    retry = Retry(connect=3, backoff_factor=0.5)
+    retry = Retry(connect=3, backoff_factor=1)
     adapter = HTTPAdapter(max_retries=retry)
     session.mount('https://', adapter)
 
     if stocks:
-        logging.info(f'Загрузка товаров с артикулом {stocks}')
+        print(f'Загрузка товаров с артикулом {stocks} размер {len(stocks)}')
         # stocks.append({"offer_id": str(i['sid']), "stock": i['stock'], "warehouse_id": warehouse_id})
         # todo сделать запросы через внутреннее апи if len(stocks) % 50 == 0 or len(sima_land) < 50:
 
