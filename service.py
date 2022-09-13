@@ -105,7 +105,7 @@ def get_sima_land_items(ozon_products_ids, SIMA_LAND_TOKEN, API_KEY, CLIENT_ID):
                 stocks.append({'offer_id': str(response.json()['sid']), 'stock': response.json()['balance'],
                                "warehouse_id": warehouse_id})
         except Exception as e:
-            print(i, response.json().get('message'), f'at time {datetime.datetime.now()}')
+            print(i, e, f'at time {datetime.datetime.now()}')
     return stocks
 
 
@@ -135,7 +135,6 @@ def update_ozon_items(stocks, API_KEY, CLIENT_ID):
             print(e, time.time())
         for item in res.json()['result']:
             if not item['updated']:
-                time.sleep(10)
                 print(f"Товар {item['offer_id']} не обновлен ", item['errors'][0]['message'])
             else:
                 Result.items_selling += 1
