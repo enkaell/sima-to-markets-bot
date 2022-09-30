@@ -1,20 +1,60 @@
-from typing import Union
-
 import requests
-from fastapi import FastAPI, responses
 
-app = FastAPI()
-Token = 123
+cookies = {
+    'settlement_id': '27503892',
+    'district_id': '545',
+    'abSegment': 'I',
+    'abVersion': '2',
+    'oko-uid': 'bZ3jWMvmjjlUyGyS',
+    '_gcl_au': '1.1.1167868142.1657032426',
+    'hasCookiesAgree': '1',
+    '_ym_uid': '1657032427521502308',
+    '_ym_d': '1657032427',
+    '_userGUID': '0:l58aboa7:AZUaGNXF0f5YJKOx33AVkKCEVfJgbByt',
+    'popmechanic_sbjs_migrations': 'popmechanic_1418474375998%3D1%7C%7C%7C1471519752600%3D1%7C%7C%7C1471519752605%3D1',
+    '_tt_enable_cookie': '1',
+    '_ttp': 'c14a42e7-2190-400e-9311-e13141ffee45',
+    'isCitySelected': '1',
+    'top_chponck_is_closed': '%5B%5D',
+    'tmr_lvid': 'd69f8853fd6cc11afec8ad0fbbee5ecb',
+    'tmr_lvidTS': '1659954171980',
+    'NEWSIMALAND': '33eb69032a5affc32d03f7935ad56808',
+    '_identity': 'f2c430b7d44d0e9e1ced59e1fd680aa84837d28a8ad002f0f8ffdf1d513b98ffa%3A2%3A%7Bi%3A0%3Bs%3A9%3A%22_identity%22%3Bi%3A1%3Bs%3A53%3A%22%5B2707241%2C%22cJdhfpCsdXCoa8YWR_4X-_nSEXUaEDpu%22%2C31536000%5D%22%3B%7D',
+    'user_settings': '%7B%22sort%22%3A%22price%22%2C%22per_page%22%3A20%2C%22currency%22%3A%22BYN%22%2C%22viewtype%22%3A%22list%22%2C%22mode%22%3A%22server%22%7D',
+    'userSettings': '5cd2cd6a780ce77683aeb4e2080ac69d1e2dcb101fb1bc79cab9da776d2b4b43a%3A2%3A%7Bi%3A0%3Bs%3A12%3A%22userSettings%22%3Bi%3A1%3Bs%3A107%3A%22%7B%22sort%22%3A%22price%22%2C%22per_page%22%3A20%2C%22currency%22%3A%22BYN%22%2C%22viewtype%22%3A%22list%22%2C%22viewtypes%22%3A%5B%5D%2C%22sorts%22%3A%5B%5D%2C%22mode%22%3A%22server%22%7D%22%3B%7D',
+    'utm_source': 'referral',
+    'mindboxDeviceUUID': '467dc300-394e-4403-9033-ad91f35ca99c',
+    'directCrm-session': '%7B%22deviceGuid%22%3A%22467dc300-394e-4403-9033-ad91f35ca99c%22%7D',
+    'country': '50fa73c1717e928f15414ffc679f880ea767aa7cd87af488d2b810a15b6312b1a%3A2%3A%7Bi%3A0%3Bs%3A7%3A%22country%22%3Bi%3A1%3Bs%3A2%3A%22RU%22%3B%7D',
+    'EXPRESS': 'GeAcZI24',
+    '_gid': 'GA1.2.1246235027.1664453985',
+    '_ym_isad': '1',
+    '_csrf': 'dffc6f5e68bfb21b018e029b69535e04f89affabfd08fe8cd224af59209a7c32a%3A2%3A%7Bi%3A0%3Bs%3A5%3A%22_csrf%22%3Bi%3A1%3Bs%3A32%3A%223LkRiQeQ3QYvfHk695D_9ftII2R4fNc6%22%3B%7D',
+    '_ym_visorc': 'b',
+    '_dc_gtm_UA-5187674-1': '1',
+    '_gat_UA-5187674-1': '1',
+    'tmr_detect': '0%7C1664546276364',
+    '_ga_6EH1EVKLTZ': 'GS1.1.1664545366.50.1.1664546311.0.0.0',
+    '_ga_BDRVG0GET6': 'GS1.1.1664545366.51.1.1664546311.21.0.0',
+    '_ga': 'GA1.2.937292739.1657032428',
+    'tmr_reqNum': '1056',
+}
 
+headers = {
+    'authority': 'www.sima-land.ru',
+    'accept': 'application/json, text/plain, */*',
+    'accept-language': 'ru,en;q=0.9,es;q=0.8',
+    # Requests sorts cookies= alphabetically
+    # 'cookie': 'settlement_id=27503892; district_id=545; abSegment=I; abVersion=2; oko-uid=bZ3jWMvmjjlUyGyS; _gcl_au=1.1.1167868142.1657032426; hasCookiesAgree=1; _ym_uid=1657032427521502308; _ym_d=1657032427; _userGUID=0:l58aboa7:AZUaGNXF0f5YJKOx33AVkKCEVfJgbByt; popmechanic_sbjs_migrations=popmechanic_1418474375998%3D1%7C%7C%7C1471519752600%3D1%7C%7C%7C1471519752605%3D1; _tt_enable_cookie=1; _ttp=c14a42e7-2190-400e-9311-e13141ffee45; isCitySelected=1; top_chponck_is_closed=%5B%5D; tmr_lvid=d69f8853fd6cc11afec8ad0fbbee5ecb; tmr_lvidTS=1659954171980; NEWSIMALAND=33eb69032a5affc32d03f7935ad56808; _identity=f2c430b7d44d0e9e1ced59e1fd680aa84837d28a8ad002f0f8ffdf1d513b98ffa%3A2%3A%7Bi%3A0%3Bs%3A9%3A%22_identity%22%3Bi%3A1%3Bs%3A53%3A%22%5B2707241%2C%22cJdhfpCsdXCoa8YWR_4X-_nSEXUaEDpu%22%2C31536000%5D%22%3B%7D; user_settings=%7B%22sort%22%3A%22price%22%2C%22per_page%22%3A20%2C%22currency%22%3A%22BYN%22%2C%22viewtype%22%3A%22list%22%2C%22mode%22%3A%22server%22%7D; userSettings=5cd2cd6a780ce77683aeb4e2080ac69d1e2dcb101fb1bc79cab9da776d2b4b43a%3A2%3A%7Bi%3A0%3Bs%3A12%3A%22userSettings%22%3Bi%3A1%3Bs%3A107%3A%22%7B%22sort%22%3A%22price%22%2C%22per_page%22%3A20%2C%22currency%22%3A%22BYN%22%2C%22viewtype%22%3A%22list%22%2C%22viewtypes%22%3A%5B%5D%2C%22sorts%22%3A%5B%5D%2C%22mode%22%3A%22server%22%7D%22%3B%7D; utm_source=referral; mindboxDeviceUUID=467dc300-394e-4403-9033-ad91f35ca99c; directCrm-session=%7B%22deviceGuid%22%3A%22467dc300-394e-4403-9033-ad91f35ca99c%22%7D; country=50fa73c1717e928f15414ffc679f880ea767aa7cd87af488d2b810a15b6312b1a%3A2%3A%7Bi%3A0%3Bs%3A7%3A%22country%22%3Bi%3A1%3Bs%3A2%3A%22RU%22%3B%7D; EXPRESS=GeAcZI24; _gid=GA1.2.1246235027.1664453985; _ym_isad=1; _csrf=dffc6f5e68bfb21b018e029b69535e04f89affabfd08fe8cd224af59209a7c32a%3A2%3A%7Bi%3A0%3Bs%3A5%3A%22_csrf%22%3Bi%3A1%3Bs%3A32%3A%223LkRiQeQ3QYvfHk695D_9ftII2R4fNc6%22%3B%7D; _ym_visorc=b; _dc_gtm_UA-5187674-1=1; _gat_UA-5187674-1=1; tmr_detect=0%7C1664546276364; _ga_6EH1EVKLTZ=GS1.1.1664545366.50.1.1664546311.0.0.0; _ga_BDRVG0GET6=GS1.1.1664545366.51.1.1664546311.21.0.0; _ga=GA1.2.937292739.1657032428; tmr_reqNum=1056',
+    'referer': 'https://www.sima-land.ru/5548687/foreign-language-book-papki-i-konverty-krasota-i-ocharovanie-na-angliyskom-yazyke/',
+    'sec-ch-ua': '" Not A;Brand";v="99", "Chromium";v="102", "Yandex";v="22"',
+    'sec-ch-ua-mobile': '?0',
+    'sec-ch-ua-platform': '"Linux"',
+    'sec-fetch-dest': 'empty',
+    'sec-fetch-mode': 'cors',
+    'sec-fetch-site': 'same-origin',
+    'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.167 YaBrowser/22.7.3.811 Yowser/2.5 Safari/537.36',
+}
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
-
-
-@app.post("/market/cart", status_code=403)
-async def cart(token: int):
-    if token != Token:
-        return responses.Response(status_code=400)
-    else:
-        return "OK"
+response = requests.get('https://www.sima-land.ru/api/v3/item/?price_wo_offers=1&id=4713583&fields=max_qty', cookies=cookies, headers=headers)
+response.json()['items'][0]['max_qty']

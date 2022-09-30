@@ -1,7 +1,7 @@
 import requests
 import time
 import logging
-
+from api import cookies, headers
 import schedule
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
@@ -43,7 +43,6 @@ def main():
         get_sima_land_items(ozon_products_ids, SIMA_LAND_TOKEN, API_KEY, CLIENT_ID)
         ozon_products_ids, last_id = get_ozon_items(API_KEY, CLIENT_ID, last_id)
         if len(ozon_products_ids) < 4:
-            k = 1
             print(
                 f"Ended in {datetime.datetime.now()},в продаже: {Result.items_selling}, которых нет на Сима-Ленде: {Result.items_waiting}")
 
@@ -85,24 +84,13 @@ def get_sima_land_items(ozon_products_ids, SIMA_LAND_TOKEN, API_KEY, CLIENT_ID):
             update_ozon_items(stocks, API_KEY, CLIENT_ID)
             stocks = []
         try:
-            response = session.get(
-                f'https://www.sima-land.ru/api/v5/item/{i}?view=brief&by_sid=true',
-                headers={
-                    'accept': 'application/json',
-                    'X-Api-Key': SIMA_LAND_TOKEN,
-                    'Authorization': SIMA_LAND_TOKEN,
-                },
-
-                params={
-                    'view': 'brief',
-                    'by_sid': 'true',
-                }
-            )
-            if int(response.json()['balance']) < SIMA_LAND_MIN:
-                stocks.append({'offer_id': str(response.json()['sid']), 'stock': 0, "warehouse_id": warehouse_id})
+            response = requests.get(f'https://www.sima-land.ru/api/v3/item/?price_wo_offers=1&sid={i}&fields=max_qty',
+                                    cookies=cookies, headers=headers)
+            if int(response.json()['items'][0]['max_qty']) < SIMA_LAND_MIN:
+                stocks.append({'offer_id': str(i), 'stock': 0, "warehouse_id": warehouse_id})
                 Result.items_waiting += 1
             else:
-                stocks.append({'offer_id': str(response.json()['sid']), 'stock': response.json()['balance'],
+                stocks.append({'offer_id': str(i), 'stock': response.json()['items'][0]['max_qty'],
                                "warehouse_id": warehouse_id})
         except Exception as e:
             print(i, e, f'at time {datetime.datetime.now()}')
