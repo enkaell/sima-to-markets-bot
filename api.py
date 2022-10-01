@@ -1,4 +1,3 @@
-import requests
 
 cookies = {
     'settlement_id': '27503892',
@@ -55,6 +54,3 @@ headers = {
     'sec-fetch-site': 'same-origin',
     'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.167 YaBrowser/22.7.3.811 Yowser/2.5 Safari/537.36',
 }
-
-response = requests.get('https://www.sima-land.ru/api/v3/item/?price_wo_offers=1&id=4713583&fields=max_qty', cookies=cookies, headers=headers)
-response.json()['items'][0]['max_qty']

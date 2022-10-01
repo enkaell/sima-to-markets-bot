@@ -1,11 +1,9 @@
 import requests
 import time
-import logging
 from api import cookies, headers
-import schedule
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 import datetime
 import configparser
 
@@ -59,6 +57,8 @@ def get_ozon_items(API_KEY, CLIENT_ID, last_id=''):
                             "limit": 1000
                         })
     for i in res.json().get('result')['items']:
+        if i.get('offer_id') == 'Не найден':
+            continue
         try:
             ozon_products_ids.append(int(i.get('offer_id')))
         except ValueError as e:
@@ -74,26 +74,31 @@ def get_sima_land_items(ozon_products_ids, SIMA_LAND_TOKEN, API_KEY, CLIENT_ID):
     retry = Retry(connect=3, backoff_factor=1)
     adapter = HTTPAdapter(max_retries=retry)
     session.mount('https://', adapter)
-
+    res_payload = []
     res = requests.post('https://api-seller.ozon.ru/v1/warehouse/list',
                         headers={'Api-Key': API_KEY, 'Client-Id': CLIENT_ID})
     warehouse_id = res.json()['result'][0].get('warehouse_id')
-
     for i in ozon_products_ids:
-        if len(stocks) == 90:
-            update_ozon_items(stocks, API_KEY, CLIENT_ID)
-            stocks = []
-        try:
-            response = requests.get(f'https://www.sima-land.ru/api/v3/item/?price_wo_offers=1&sid={i}&fields=max_qty',
-                                    cookies=cookies, headers=headers)
-            if int(response.json()['items'][0]['max_qty']) < SIMA_LAND_MIN:
-                stocks.append({'offer_id': str(i), 'stock': 0, "warehouse_id": warehouse_id})
-                Result.items_waiting += 1
-            else:
-                stocks.append({'offer_id': str(i), 'stock': response.json()['items'][0]['max_qty'],
-                               "warehouse_id": warehouse_id})
-        except Exception as e:
-            print(i, e, f'at time {datetime.datetime.now()}')
+        res_payload.append(i)
+        if len(res_payload) == 50:
+            if len(stocks) == 100:
+                update_ozon_items(stocks, API_KEY, CLIENT_ID)
+                stocks = []
+            try:
+                response = requests.get(
+                    f"https://www.sima-land.ru/api/v3/item/?price_wo_offers=1&sid={','.join(map(str, res_payload))}&fields=max_qty",
+                    cookies=cookies, headers=headers)
+                if items := response.json()['items']:
+                    for j in range(len(items)):
+                        if int(items[j]['max_qty']) < SIMA_LAND_MIN:
+                            stocks.append({'offer_id': str(res_payload[j]), 'stock': 0, "warehouse_id": warehouse_id})
+                            Result.items_waiting += 1
+                        else:
+                            stocks.append({'offer_id': str(res_payload[j]), 'stock': items[j]['max_qty'],
+                                           "warehouse_id": warehouse_id})
+            except Exception as e:
+                print(i, e, f'at time {datetime.datetime.now()}')
+            res_payload = []
     return stocks
 
 
@@ -123,7 +128,7 @@ def update_ozon_items(stocks, API_KEY, CLIENT_ID):
             print(e, time.time())
         for item in res.json()['result']:
             if not item['updated']:
-                print(f"Товар {item['offer_id']} не обновлен ", item['errors'][0]['message'])
+                print(f"Товар {item['offer_id']} не обновлен ", item['errors'])
             else:
                 Result.items_selling += 1
     else:
@@ -131,4 +136,3 @@ def update_ozon_items(stocks, API_KEY, CLIENT_ID):
 
 
 main()
-
