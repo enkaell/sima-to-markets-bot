@@ -12,7 +12,7 @@ API_KEY = str()
 CLIENT_ID = str()
 
 # SIMA LAND init
-SIMA_LAND_MIN = 3
+SIMA_LAND_MIN = 5
 
 
 # # logging.basicConfig(filename='bot.log')
@@ -86,15 +86,15 @@ def get_sima_land_items(ozon_products_ids, SIMA_LAND_TOKEN, API_KEY, CLIENT_ID):
                 stocks = []
             try:
                 response = requests.get(
-                    f"https://www.sima-land.ru/api/v3/item/?price_wo_offers=1&sid={','.join(map(str, res_payload))}&fields=max_qty",
+                    f"https://www.sima-land.ru/api/v3/item/?price_wo_offers=1&sid={','.join(map(str, res_payload))}&fields=max_qty,sid",
                     cookies=cookies, headers=headers)
                 if items := response.json()['items']:
                     for j in range(len(items)):
                         if int(items[j]['max_qty']) < SIMA_LAND_MIN:
-                            stocks.append({'offer_id': str(res_payload[j]), 'stock': 0, "warehouse_id": warehouse_id})
+                            stocks.append({'offer_id': str(items[j]['sid']), 'stock': 0, "warehouse_id": warehouse_id})
                             Result.items_waiting += 1
                         else:
-                            stocks.append({'offer_id': str(res_payload[j]), 'stock': items[j]['max_qty'],
+                            stocks.append({'offer_id': str(items[j]['sid']), 'stock': items[j]['max_qty'],
                                            "warehouse_id": warehouse_id})
             except Exception as e:
                 print(i, e, f'at time {datetime.datetime.now()}')
